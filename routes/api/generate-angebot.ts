@@ -21,7 +21,7 @@ export const handler = define.handlers({
 
       const message = await client.messages.create({
         model: "claude-sonnet-5",
-        max_tokens: 1024,
+        max_tokens: 2048,
         messages: [
           {
             role: "user",
@@ -35,10 +35,14 @@ Format: Markdown, Titel, Leistungen, 75-95 EUR/h, 20-30% Material, Gesamtpreis, 
         ],
       });
 
+      const textBlock = message.content.find(
+        (block) => block.type === "text",
+      );
+
       return new Response(
         JSON.stringify({
           success: true,
-          angebot: message.content[0].type === "text" ? message.content[0].text : "",
+          angebot: textBlock && "text" in textBlock ? textBlock.text : "",
           timestamp: new Date().toISOString(),
         }),
         {
