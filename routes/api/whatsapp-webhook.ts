@@ -1,18 +1,10 @@
 import { Anthropic } from "npm:@anthropic-ai/sdk";
 import { define } from "../../utils.ts";
+import { anfragenSpeicher, type Klassifikation } from "../../speicher.ts";
 
 const client = new Anthropic({
   apiKey: Deno.env.get("CLAUDE_API_KEY"),
 });
-
-interface Klassifikation {
-  ist_seriös: boolean;
-  ist_spam: boolean;
-  kategorie: string;
-  budget_einschätzung: string;
-  dringlichkeit: "niedrig" | "mittel" | "hoch";
-  zusammenfassung: string;
-}
 
 async function klassifiziereAnfrage(nachricht: string): Promise<Klassifikation> {
   const message = await client.messages.create({
@@ -57,9 +49,8 @@ export const handler = define.handlers({
 
       const klassifikation = await klassifiziereAnfrage(nachricht);
 
-      const kv = await Deno.openKv();
       const id = crypto.randomUUID();
-      await kv.set(["anfragen", id], {
+      anfragenSpeicher.push({
         id,
         von,
         profilName,
@@ -89,4 +80,3 @@ export const handler = define.handlers({
     }
   },
 });
-
