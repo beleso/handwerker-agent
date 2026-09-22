@@ -1,4 +1,5 @@
 import { define } from "../../utils.ts";
+import { anfragenSpeicher } from "../../speicher.ts";
 
 export const handler = define.handlers({
   async OPTIONS() {
@@ -12,16 +13,8 @@ export const handler = define.handlers({
   },
   async GET() {
     try {
-      const kv = await Deno.openKv();
-      const entries = kv.list({ prefix: ["anfragen"] });
-      // deno-lint-ignore no-explicit-any
-      const anfragen: any[] = [];
-      for await (const entry of entries) {
-        anfragen.push(entry.value);
-      }
-      anfragen.sort(
-        // deno-lint-ignore no-explicit-any
-        (a: any, b: any) =>
+      const anfragen = [...anfragenSpeicher].sort(
+        (a, b) =>
           new Date(b.eingegangen).getTime() - new Date(a.eingegangen).getTime(),
       );
 
@@ -48,4 +41,3 @@ export const handler = define.handlers({
     }
   },
 });
-
